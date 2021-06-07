@@ -31,7 +31,7 @@ public class InputBuffer {
     }
 
     public String pop() throws IOException {
-        String string = getCurrentString().toString();
+        String string = getCurrentString();
         reload();
         return string;
     }
