@@ -201,6 +201,7 @@ public class ExternalSorting {
         for (File file : files) {
             file.delete();
         }
+        // Kamil's comment
     }
 
 
