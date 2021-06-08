@@ -202,6 +202,7 @@ public class ExternalSorting {
             file.delete();
         }
         // Kamil's comment
+        // Marcin's comment
     }
 
 
