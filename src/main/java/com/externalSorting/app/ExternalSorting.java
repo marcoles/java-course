@@ -11,12 +11,12 @@ public class ExternalSorting {
     CHANGE_FILE
     Maximum number of lines of text that can be put into a single temporary file
     */
-    static final int CHANGE_FILE = 400000;
+    private static final int CHANGE_FILE = 400000;
 
     /*
     Defines a default string comparator
     */
-    public static Comparator<String> comparator = (o1, o2) -> o1.compareTo(o2);
+    private static final Comparator<String> comparator = (o1, o2) -> o1.compareTo(o2);
 
     /*
     Reads data from a single text file and splits it into a number of temporary text files
@@ -186,7 +186,7 @@ public class ExternalSorting {
      *param* inputString
      Line of text to be formatted
      */
-    public static String[] formatString(String inputString) {
+    private static String[] formatString(String inputString) {
         return inputString
                 .toLowerCase()
                 .replaceAll("\\p{Punct}", "")
