@@ -1,24 +1,44 @@
 package com.externalSorting.app;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 
-public class ExternalSorting {
-    /*
+public class ExternalSortingRunner {
+
+    private final String originalFile;
+    private final String outputFolder;
+
+    public ExternalSortingRunner(String originalFile, String outputFile) {
+        this.originalFile = originalFile;
+        this.outputFolder = outputFile;
+    }
+
+    protected void externalSort() {
+
+        System.out.println(outputFolder + "/tmpdir");
+        File newDirectory = new File("src/main/resources/tmpdir/");
+        List<File> files = readAndSplitData("src/main/resources/SmallLibrary.txt", newDirectory);
+
+        System.out.println(outputFolder + "/Output.txt");
+        mergeFiles(files, new File("src/main/resources/SmallLibraryOutput.txt"), comparator);
+        for (File file : files) {
+            file.delete();
+        }
+        newDirectory.delete();
+    }
+    /**
     CHANGE_FILE
     Maximum number of lines of text that can be put into a single temporary file
     */
-    private static final int CHANGE_FILE = 400000;
+    private static final int TMP_FILE_MAXSIZE = 24000000; // 24mb
 
-    /*
+    /**
     Defines a default string comparator
     */
     private static final Comparator<String> comparator = (o1, o2) -> o1.compareTo(o2);
 
-    /*
+    /**
     Reads data from a single text file and splits it into a number of temporary text files
     containing lists of alphabetically sorted words
 
@@ -35,21 +55,21 @@ public class ExternalSorting {
         List<String> buffer = new ArrayList<>();
         List<File> files = new ArrayList<>();
 
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(filePath))) {
-            int count = 0;
+        try (BufferedReader reader = new MyBufferedReader(filePath)) {
+            int currentEstimatedFileSize = 0;
             for (String line = reader.readLine(); line != null; line = reader.readLine()){
                 List<String> splitLine = Arrays.asList(formatString(line));
-                count++;
-                // splitLine.removeIf(word -> word.isEmpty());
+                for (String s: splitLine) {
+                    currentEstimatedFileSize += s.length() + 1;
+                }
                 buffer.addAll(splitLine);
-                // buffer.remove("");  // remove empty strings in case of larger space between lines of text
-                if (count >= CHANGE_FILE) {
-                    count = 0;
-                    files.add(sortAndWriteSplitData(buffer, directoryPath));
+                if (currentEstimatedFileSize >= TMP_FILE_MAXSIZE) {
+                    currentEstimatedFileSize = 0;
+                    files.add(sortAndWriteData(buffer, directoryPath));
                     buffer.clear();
                 }
             }
-            files.add(sortAndWriteSplitData(buffer, directoryPath)); // write remaining data
+            files.add(sortAndWriteData(buffer, directoryPath)); // write remaining data
             buffer.clear();
 
         } catch(IOException e) {
@@ -58,7 +78,7 @@ public class ExternalSorting {
         return files;
     }
 
-    /*
+    /**
     Sorts a list of strings using a default comparator
     Then writes the list to a new temporary text file created in the given directory
 
@@ -71,11 +91,10 @@ public class ExternalSorting {
     *return*
     Returns the created temporary file
     */
-    private static File sortAndWriteSplitData(List<String> buffer, File directory) throws IOException {
+    private static File sortAndWriteData(List<String> buffer, File directory) throws IOException {
         buffer.sort(comparator);
         File newFile = File.createTempFile("splitData", "flatFile", directory);
-        OutputStream out = new FileOutputStream(newFile);
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out))) {
+        try (BufferedWriter writer = new MyBufferedWriter(newFile)) {
             for (String s : buffer) {
                 writer.write(s);
                 writer.newLine();
@@ -86,7 +105,7 @@ public class ExternalSorting {
         return newFile;
     }
 
-    /*
+    /**
     Creates InputBuffer instances for every temporary text file and opens their BufferedReaders
 
     *param* files
@@ -98,14 +117,10 @@ public class ExternalSorting {
     private static ArrayList<InputBuffer> convertFilesToInputBuffers(List<File> files) {
         ArrayList<InputBuffer> buffers = new ArrayList<>();
         for (File file : files) {
-            final int BUFFER_SIZE = 2000;
             try {
-                BufferedReader reader = new BufferedReader(
-                                                new InputStreamReader(
-                                                        new FileInputStream(file)), BUFFER_SIZE);
+                BufferedReader reader = new MyBufferedReader(file);
                 InputBuffer buffer = new InputBuffer(reader);
                 buffers.add(buffer);
-
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -115,7 +130,7 @@ public class ExternalSorting {
         return buffers;
     }
 
-    /*
+    /**
     Takes a list of text files and merges them into a single text file while keeping an alphabetical order of words
 
     *param* files
@@ -128,25 +143,17 @@ public class ExternalSorting {
     Comparator used as a base of the comparator in priority queue
     */
     private static void mergeFiles(List<File> files, File outputFile, Comparator<String> cmp) {
-        // creating a list of InputBuffer instances from files
         ArrayList<InputBuffer> buffers = convertFilesToInputBuffers(files);
-
-        // creating a priority queue which will be used to store words into the output file
         PriorityQueue<InputBuffer> priorityQueue = new PriorityQueue<>(10,
                                                             (o1, o2) -> cmp.compare(o1.getCurrentString(), o2.getCurrentString()));
 
-        // try with resources for BufferedWriter
-        try (BufferedWriter writer = new BufferedWriter(
-                                            new OutputStreamWriter(
-                                                    new FileOutputStream(outputFile)))) {
+        try (BufferedWriter writer = new MyBufferedWriter(outputFile)){
 
-            // putting all the InputBuffer instances into the priority queue
             for (InputBuffer buffer : buffers) {
                 if (!buffer.isEmpty()) {
                     priorityQueue.add(buffer);
                 }
             }
-            // writing words from priority queue into the output file until the queue is empty
             while(priorityQueue.size() > 0) {
                 InputBuffer buffer = priorityQueue.poll();
                 String string = buffer.pop();
@@ -177,7 +184,7 @@ public class ExternalSorting {
 
     }
 
-    /*
+    /**
     Takes a line of text and formats it by:
         - changing all characters to lower case
         - removing punctuation characters
@@ -192,18 +199,5 @@ public class ExternalSorting {
                 .replaceAll("\\p{Punct}", "")
                 .split("\\s+");
     }
-
-
-    public static void main(String[] args){
-        File newDirectory = new File("src/main/resources/tmpdir/");
-        List<File> files = readAndSplitData("src/main/resources/SmallLibrary.txt", newDirectory);
-        mergeFiles(files, new File("src/main/resources/SmallLibraryOutput.txt"), comparator);
-        for (File file : files) {
-            file.delete();
-        }
-        // Kamil's comment
-        // Marcin's comment
-    }
-
 
 }
