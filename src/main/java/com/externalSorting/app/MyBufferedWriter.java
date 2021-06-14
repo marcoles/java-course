@@ -2,6 +2,9 @@ package com.externalSorting.app;
 
 import java.io.*;
 
+/**
+ * Provides a constructor to create a buffered writer on a File object
+ */
 public class MyBufferedWriter extends BufferedWriter {
 
     public MyBufferedWriter(File outputFile) throws IOException {
