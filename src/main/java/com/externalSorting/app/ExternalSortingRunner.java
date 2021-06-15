@@ -6,21 +6,34 @@ import java.util.*;
 
 public class ExternalSortingRunner {
 
-    private final String originalFile;
-    private final String outputFolder;
+    private final PathsData paths;
 
     /**
      * Constructor
      *
-     * @param originalFile
-     * Path to the file that will be externally sorted
-     * @param outputFolder
-     * Path to the folder which will contain both the temporary files and the output file
+     * @param paths
+     * Contains paths to the original file and the output folder
      */
-    public ExternalSortingRunner(String originalFile, String outputFolder) {
-        this.originalFile = originalFile;
-        this.outputFolder = outputFolder;
+    public ExternalSortingRunner(PathsData paths) {
+        this.paths = paths;
     }
+
+    /**
+     AVAILABLE_MEMORY
+     Used to calculate maximum size of temporary files
+     */
+    private static final long AVAILABLE_MEMORY = Runtime.getRuntime().freeMemory();
+
+    /**
+     TMP_FILE_MAXSIZE
+     Maximum number of bytes of a single temporary file. The value of this variable controls memory usage.
+     */
+    private static final long TMP_FILE_MAXSIZE = AVAILABLE_MEMORY / 10; // around 22MB for -Xmx256m
+
+    /**
+     Defines a default string comparator
+     */
+    private static final Comparator<String> comparator = Comparator.naturalOrder();
 
     /**
      * This method is meant to be called from main function.
@@ -30,26 +43,15 @@ public class ExternalSortingRunner {
      *  deleting temporary folder and files after the process is finished
      */
     public void externalSort() {
-        File newDirectory = new File(outputFolder + "/tmpdir");
+        File newDirectory = new File(String.format("%s/tmpdir", paths.getOutputFolder()));
         newDirectory.mkdir();
-        List<File> files = readAndSplitData(originalFile, newDirectory);
-        mergeFiles(files, new File(outputFolder + "/Output.txt"));
+        List<File> files = readAndSplitData(paths.getOriginalFile(), newDirectory);
+        mergeFiles(files, new File( String.format("%s/Output.txt", paths.getOutputFolder())));
         for (File file : files) {
             file.delete();
         }
         newDirectory.delete();
     }
-
-    /**
-    TMP_FILE_MAXSIZE
-    Maximum number of bytes of a single temporary file. The value of this variable controls memory usage.
-    */
-    private static final int TMP_FILE_MAXSIZE = 10000000; // around 10MB
-
-    /**
-    Defines a default string comparator
-    */
-    private static final Comparator<String> comparator = Comparator.naturalOrder();
 
     /**
      * Reads data from a single text file and splits it into a number of temporary text files
@@ -65,7 +67,7 @@ public class ExternalSortingRunner {
     private List<File> readAndSplitData(String filePath, File directoryPath) {
         List<String> buffer = new ArrayList<>();
         List<File> files = new ArrayList<>();
-        int NEWLINE_CHAR_SIZE = 1;
+        int NEWLINE_CHAR_SIZE = 2;
 
         try (BufferedReader reader = new MyBufferedReader(filePath)) {
             int currentEstimatedFileSize = 0;
@@ -81,6 +83,7 @@ public class ExternalSortingRunner {
                     currentEstimatedFileSize = 0;
                     files.add(sortAndWriteData(buffer, directoryPath));
                     buffer.clear();
+                    System.out.println("MB: " + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024);
                 }
             }
             files.add(sortAndWriteData(buffer, directoryPath)); // write remaining data
