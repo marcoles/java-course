@@ -12,8 +12,8 @@ public class Main {
         String outputFile = input.nextLine();
         input.close();
 
-
-        ExternalSortingRunner runner = new ExternalSortingRunner(originalFile, outputFile);
+        PathsData pathsData = new PathsData(originalFile, outputFile);
+        ExternalSortingRunner runner = new ExternalSortingRunner(pathsData);
         runner.externalSort();
     }
 }
