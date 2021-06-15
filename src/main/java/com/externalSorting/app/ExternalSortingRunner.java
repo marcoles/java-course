@@ -6,92 +6,107 @@ import java.util.*;
 
 public class ExternalSortingRunner {
 
-    private final String originalFile;
-    private final String outputFolder;
+    private final PathsData paths;
 
-    public ExternalSortingRunner(String originalFile, String outputFile) {
-        this.originalFile = originalFile;
-        this.outputFolder = outputFile;
+    /**
+     * Constructor
+     *
+     * @param paths
+     * Contains paths to the original file and the output folder
+     */
+    public ExternalSortingRunner(PathsData paths) {
+        this.paths = paths;
     }
 
-    protected void externalSort() {
+    /**
+     AVAILABLE_MEMORY
+     Used to calculate maximum size of temporary files
+     */
+    private static final long AVAILABLE_MEMORY = Runtime.getRuntime().freeMemory();
 
-        System.out.println(outputFolder + "/tmpdir");
-        File newDirectory = new File("src/main/resources/tmpdir/");
-        List<File> files = readAndSplitData("src/main/resources/SmallLibrary.txt", newDirectory);
+    /**
+     TMP_FILE_MAXSIZE
+     Maximum number of bytes of a single temporary file. The value of this variable controls memory usage.
+     */
+    private static final long TMP_FILE_MAXSIZE = AVAILABLE_MEMORY / 10; // around 22MB for -Xmx256m
 
-        System.out.println(outputFolder + "/Output.txt");
-        mergeFiles(files, new File("src/main/resources/SmallLibraryOutput.txt"), comparator);
+    /**
+     Defines a default string comparator
+     */
+    private static final Comparator<String> comparator = Comparator.naturalOrder();
+
+    /**
+     * This method is meant to be called from main function.
+     * It is responsible for:
+     *  creating a temporary folder which will hold data files
+     *  calling readAndSplitData and mergeFiles
+     *  deleting temporary folder and files after the process is finished
+     */
+    public void externalSort() {
+        File newDirectory = new File(String.format("%s/tmpdir", paths.getOutputFolder()));
+        newDirectory.mkdir();
+        List<File> files = readAndSplitData(paths.getOriginalFile(), newDirectory);
+        mergeFiles(files, new File( String.format("%s/Output.txt", paths.getOutputFolder())));
         for (File file : files) {
             file.delete();
         }
         newDirectory.delete();
     }
-    /**
-    CHANGE_FILE
-    Maximum number of lines of text that can be put into a single temporary file
-    */
-    private static final int TMP_FILE_MAXSIZE = 24000000; // 24mb
 
     /**
-    Defines a default string comparator
-    */
-    private static final Comparator<String> comparator = (o1, o2) -> o1.compareTo(o2);
-
-    /**
-    Reads data from a single text file and splits it into a number of temporary text files
-    containing lists of alphabetically sorted words
-
-    *param* fileName
-    Path to original single text file to be read from
-
-    *param* directory
-    Path of the directory which will contain temporary text files with lists of sorted words
-
-    *return*
-    Returns a list of created temporary files containing sorted data from original file
-    */
-    private static List<File> readAndSplitData(String filePath, File directoryPath) {
+     * Reads data from a single text file and splits it into a number of temporary text files
+     * containing lists of alphabetically sorted words
+     *
+     * @param filePath
+     * Path to the text file from which data will be read
+     * @param directoryPath
+     * Path of the directory which will contain temporary text files with lists of sorted words
+     * @return
+     * Returns a list of created temporary files containing sorted data from original text file
+     */
+    private List<File> readAndSplitData(String filePath, File directoryPath) {
         List<String> buffer = new ArrayList<>();
         List<File> files = new ArrayList<>();
+        int NEWLINE_CHAR_SIZE = 2;
 
         try (BufferedReader reader = new MyBufferedReader(filePath)) {
             int currentEstimatedFileSize = 0;
+            List<String> splitLine;
             for (String line = reader.readLine(); line != null; line = reader.readLine()){
-                List<String> splitLine = Arrays.asList(formatString(line));
+                splitLine = Arrays.asList(formatString(line));
                 for (String s: splitLine) {
-                    currentEstimatedFileSize += s.length() + 1;
+                    currentEstimatedFileSize += s.getBytes().length + NEWLINE_CHAR_SIZE;
                 }
                 buffer.addAll(splitLine);
+
                 if (currentEstimatedFileSize >= TMP_FILE_MAXSIZE) {
                     currentEstimatedFileSize = 0;
                     files.add(sortAndWriteData(buffer, directoryPath));
                     buffer.clear();
+                    System.out.println("MB: " + (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024);
                 }
             }
             files.add(sortAndWriteData(buffer, directoryPath)); // write remaining data
             buffer.clear();
 
         } catch(IOException e) {
-            System.out.println(e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
         }
         return files;
     }
 
     /**
-    Sorts a list of strings using a default comparator
-    Then writes the list to a new temporary text file created in the given directory
-
-    *param* buffer
-    List of strings to be sorted and written to the temporary file
-
-    *param* directory
-    Path of the directory which will contain temporary text files with lists of sorted words
-
-    *return*
-    Returns the created temporary file
-    */
-    private static File sortAndWriteData(List<String> buffer, File directory) throws IOException {
+     * Sorts a list of strings using a default comparator
+     * Then writes the list to a new temporary text file created in the given directory
+     *
+     * @param buffer
+     * List of strings to be sorted and written to the temporary file
+     * @param directory
+     * Path of the directory which will contain temporary text files with lists of sorted words
+     * @return
+     * Returns the created temporary file
+     */
+    private File sortAndWriteData(List<String> buffer, File directory) throws IOException {
         buffer.sort(comparator);
         File newFile = File.createTempFile("splitData", "flatFile", directory);
         try (BufferedWriter writer = new MyBufferedWriter(newFile)) {
@@ -100,55 +115,48 @@ public class ExternalSortingRunner {
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.out.println(e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
         }
         return newFile;
     }
 
     /**
-    Creates InputBuffer instances for every temporary text file and opens their BufferedReaders
-
-    *param* files
-    List of files that will be used to create InputBuffer instances
-
-    *return*
-    Returns a list of created InputBuffer instances
-    */
-    private static ArrayList<InputBuffer> convertFilesToInputBuffers(List<File> files) {
+     * Creates InputBuffer instances for every temporary text file
+     *
+     * @param files
+     * List of files that will be used to create InputBuffer instances
+     * @return
+     * Returns a list of created InputBuffer instances
+     */
+    private ArrayList<InputBuffer> convertFilesToInputBuffers(List<File> files) {
         ArrayList<InputBuffer> buffers = new ArrayList<>();
         for (File file : files) {
             try {
                 BufferedReader reader = new MyBufferedReader(file);
                 InputBuffer buffer = new InputBuffer(reader);
                 buffers.add(buffer);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
-                System.out.println(e.getClass().getSimpleName() + " - " + e.getMessage());
+                e.printStackTrace();
             }
         }
         return buffers;
     }
 
     /**
-    Takes a list of text files and merges them into a single text file while keeping an alphabetical order of words
-
-    *param* files
-    List of temporary text files containing data from the original file
-
-    *param* outputFile
-    Path to the file that will contain all the data from the original text file, sorted into a list of sorted words
-
-    *param* cmp
-    Comparator used as a base of the comparator in priority queue
-    */
-    private static void mergeFiles(List<File> files, File outputFile, Comparator<String> cmp) {
+     * Takes a list of temporary text files and merges them into a single text file
+     * while keeping an alphabetical order of words using priority queue
+     *
+     * @param files
+     * List of temporary text files
+     * @param outputFile
+     * Path to the file that will contain all the merged data from temporary files
+     */
+    private void mergeFiles(List<File> files, File outputFile) {
         ArrayList<InputBuffer> buffers = convertFilesToInputBuffers(files);
         PriorityQueue<InputBuffer> priorityQueue = new PriorityQueue<>(10,
-                                                            (o1, o2) -> cmp.compare(o1.getCurrentString(), o2.getCurrentString()));
+                                                            (o1, o2) -> ExternalSortingRunner.comparator.compare(o1.getCurrentString(), o2.getCurrentString()));
 
         try (BufferedWriter writer = new MyBufferedWriter(outputFile)){
-
             for (InputBuffer buffer : buffers) {
                 if (!buffer.isEmpty()) {
                     priorityQueue.add(buffer);
@@ -165,35 +173,31 @@ public class ExternalSortingRunner {
                     priorityQueue.add(buffer);
                 }
             }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            System.out.println(e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
         }
-
         // closing readers from InputBuffer instances
         try {
             for (InputBuffer buffer : buffers) {
                 buffer.close();
             }
         } catch (IOException e) {
-            System.out.println(e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
         }
-
-
     }
 
     /**
-    Takes a line of text and formats it by:
-        - changing all characters to lower case
-        - removing punctuation characters
-        - splitting it into an array of words
-
-     *param* inputString
-     Line of text to be formatted
+     * Takes a line of text and formats it by:
+     *   changing all characters to lower case
+     *   removing punctuation characters
+     *   splitting it into an array of words
+     *
+     * @param inputString
+     * Line of text to be formatted
+     * @return
+     * Returns an array of strings containing all the words from inputString
      */
-    private static String[] formatString(String inputString) {
+    private String[] formatString(String inputString) {
         return inputString
                 .toLowerCase()
                 .replaceAll("\\p{Punct}", "")
