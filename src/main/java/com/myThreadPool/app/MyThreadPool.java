@@ -15,9 +15,10 @@ public class MyThreadPool {
     public MyThreadPool (int queueSize, int numberOfThreads) {
         this.queue = new MyQueue<>(queueSize);
         String threadName;
-        TaskExecutor taskExecutor = new TaskExecutor(queue);
+        TaskExecutor taskExecutor;
         for (int cnt = 1; cnt <= numberOfThreads; cnt++) {
             threadName = String.format("Thread-%d", cnt);
+            taskExecutor = new TaskExecutor(queue);
             Thread thread = new Thread(taskExecutor, threadName);
             thread.start();
         }
