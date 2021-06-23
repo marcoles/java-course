@@ -1,4 +1,4 @@
-package com.myThreadPool.app;
+package com.myThreadPool.app.temporaryPackage;
 
 public class CustomBankAccount {
     private double balance = 0;

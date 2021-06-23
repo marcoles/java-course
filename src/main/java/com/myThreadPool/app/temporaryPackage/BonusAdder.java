@@ -1,6 +1,9 @@
-package com.myThreadPool.app;
+package com.myThreadPool.app.temporaryPackage;
 
-public class BonusAdder extends BankOperation{
+import com.myThreadPool.app.temporaryPackage.BankOperation;
+import com.myThreadPool.app.temporaryPackage.CustomBankAccount;
+
+public class BonusAdder extends BankOperation {
 
     public BonusAdder(CustomBankAccount account) {
         super(account);
