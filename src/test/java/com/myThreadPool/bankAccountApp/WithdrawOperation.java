@@ -1,11 +1,8 @@
-package com.myThreadPool.app.temporaryPackage;
+package com.myThreadPool.temporaryPackage;
 
-import com.myThreadPool.app.temporaryPackage.BankOperation;
-import com.myThreadPool.app.temporaryPackage.CustomBankAccount;
+public class WithdrawOperation extends BankOperation {
 
-public class Subtractor extends BankOperation {
-
-    public Subtractor(CustomBankAccount account) {
+    public WithdrawOperation(CustomBankAccount account) {
         super(account);
     }
 

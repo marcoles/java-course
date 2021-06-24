@@ -1,6 +1,6 @@
-package com.myThreadPool.app.temporaryPackage;
+package com.myThreadPool.temporaryPackage;
 
-public class BankOperation implements Runnable {
+public abstract class BankOperation implements Runnable {
     protected final CustomBankAccount account;
     protected double amount = 100;
     protected boolean isBonusActive = true;
@@ -25,5 +25,4 @@ public class BankOperation implements Runnable {
         return isBonusActive;
     }
 
-    public void run() {}
 }

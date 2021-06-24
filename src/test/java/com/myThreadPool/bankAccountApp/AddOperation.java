@@ -1,8 +1,8 @@
-package com.myThreadPool.app.temporaryPackage;
+package com.myThreadPool.temporaryPackage;
 
-public class Adder extends BankOperation {
+public class AddOperation extends BankOperation {
 
-    public Adder(CustomBankAccount account) {
+    public AddOperation(CustomBankAccount account) {
         super(account);
     }
 
@@ -13,7 +13,7 @@ public class Adder extends BankOperation {
                 Thread.sleep(1000); //processing
                 account.add(amount);
                 if (isBonusActive()) {
-                    BonusAdder bonusAdder = new BonusAdder(account);
+                    AddBonusOperation bonusAdder = new AddBonusOperation(account);
                     bonusAdder.run();
                 }
             }
