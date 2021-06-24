@@ -1,4 +1,4 @@
-package com.myThreadPool.temporaryPackage;
+package com.myThreadPool.bankAccountApp;
 
 public class AddOperation extends BankOperation {
 
@@ -6,6 +6,11 @@ public class AddOperation extends BankOperation {
         super(account);
     }
 
+    /**
+     * The run method has a 1 second sleep to simulate longer processing.
+     * After that it adds some money to the bank account.
+     * If the bonus is active, it also creates a bonus adder and runs it.
+     */
     @Override
     public void run() {
         try {

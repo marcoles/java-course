@@ -1,4 +1,4 @@
-package com.myThreadPool.app;
+package com.myThreadPool;
 
 public class TaskExecutor implements Runnable{
 

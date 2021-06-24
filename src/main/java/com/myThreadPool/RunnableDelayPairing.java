@@ -1,5 +1,8 @@
-package com.myThreadPool.app;
+package com.myThreadPool;
 
+/**
+ * This is a wrapper class to contain both the Runnable and its delay, after which it is supposed to execute
+ */
 public class RunnableDelayPairing {
     private final Runnable task;
     private final long delay;

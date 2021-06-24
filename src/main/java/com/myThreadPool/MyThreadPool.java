@@ -1,4 +1,4 @@
-package com.myThreadPool.app;
+package com.myThreadPool;
 
 public class MyThreadPool {
 
@@ -6,7 +6,9 @@ public class MyThreadPool {
 
     /**
      * Constructor of MyThreadPool
-     * creates a queue which will hold Runnables with their delay and starts up threads
+     * Creates a queue which will hold Runnables with their delay
+     * Creates and starts up threads
+     *
      * @param queueSize
      * Size of the queue which will contain the Runnables
      * @param numberOfThreads
@@ -25,15 +27,24 @@ public class MyThreadPool {
     }
 
     /**
-     * Submit methods adds the Runnable to the queue
+     * Submit method adds the Runnable with its delay to the queue using a wrapper class RunnableDelayPairing
+     *
      * @param task
+     * Runnable to be added to the queue
      * @param delay
-     * @throws InterruptedException
+     * Delay after which the Runnable will be executed
      */
     public void submit (Runnable task, int delay) throws InterruptedException {
         RunnableDelayPairing taskWithDelay = new RunnableDelayPairing(task, delay);
         queue.enqueue(taskWithDelay);
     }
+
+    /**
+     * Submit method adds a Runnable without a delay to the queue
+     *
+     * @param task
+     * Runnable to be added to the queue
+     */
     public void submit (Runnable task) throws InterruptedException {
         RunnableDelayPairing taskWithoutDelay = new RunnableDelayPairing(task);
         queue.enqueue(taskWithoutDelay);
