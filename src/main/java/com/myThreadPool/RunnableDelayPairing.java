@@ -1,8 +1,11 @@
 package com.myThreadPool;
 
+import lombok.Getter;
+
 /**
  * This is a wrapper class to contain both the Runnable and its delay, after which it is supposed to execute
  */
+@Getter
 public class RunnableDelayPairing {
     private final Runnable task;
     private final long delay;
@@ -15,13 +18,5 @@ public class RunnableDelayPairing {
     public RunnableDelayPairing(Runnable runnable) {
         this.task = runnable;
         this.delay = 0;
-    }
-
-    public Runnable getTask() {
-        return task;
-    }
-
-    public long getDelay() {
-        return delay;
     }
 }

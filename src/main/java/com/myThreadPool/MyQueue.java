@@ -8,7 +8,7 @@ public class MyQueue<T> {
     private final Queue<T> queue = new LinkedList<>();
 
     private final int EMPTY = 0;
-    private int MAX_TASK_IN_QUEUE = -1;
+    private final int MAX_TASK_IN_QUEUE;
 
     public MyQueue(int size){
         this.MAX_TASK_IN_QUEUE = size;
