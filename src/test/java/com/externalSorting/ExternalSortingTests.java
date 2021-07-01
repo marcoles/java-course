@@ -1,7 +1,7 @@
-package com.externalSorting.testing.app;
+package com.externalSorting;
 
-import com.externalSorting.app.ExternalSortingRunner;
-import com.externalSorting.app.PathsData;
+import com.externalSorting.ExternalSortingRunner;
+import com.externalSorting.PathsData;
 import org.junit.Assert;
 import org.junit.Test;
 

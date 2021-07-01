@@ -1,4 +1,4 @@
-package com.externalSorting.app;
+package com.externalSorting;
 
 import java.io.*;
 

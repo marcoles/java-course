@@ -1,4 +1,4 @@
-package com.externalSorting.app;
+package com.externalSorting;
 
 /**
  * PathsData is used to store paths to the original text file and the output folder
