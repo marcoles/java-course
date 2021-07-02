@@ -2,14 +2,15 @@ package com.myThreadPool;
 
 import com.myThreadPool.bankAccountApp.AddOperation;
 import com.myThreadPool.bankAccountApp.CustomBankAccount;
+import com.myThreadPool.data_model.ThreadPoolTestData;
 import org.junit.Assert;
 import org.testng.annotations.Test;
 
 public class MyThreadPoolTests {
 
     @Test (dataProvider = "queueSize-noOfThreads", dataProviderClass = DataProviders.class)
-    public void addToTheSameAccountTenTimes (int qsize, int nthreads) throws InterruptedException {
-        MyThreadPool threadPool = new MyThreadPool(qsize,nthreads);
+    public void addToTheSameAccountTenTimes (ThreadPoolTestData testData) throws InterruptedException {
+        MyThreadPool threadPool = new MyThreadPool(testData.getQueueSize(), testData.getThreadsNumber());
         CustomBankAccount account = new CustomBankAccount();
 
         for(int taskNumber = 1 ; taskNumber <= 10; taskNumber++) {
