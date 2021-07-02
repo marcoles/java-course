@@ -8,8 +8,8 @@ import org.testng.annotations.Test;
 public class MyThreadPoolTests {
 
     @Test (dataProvider = "queueSize-noOfThreads", dataProviderClass = DataProviders.class)
-    public void addToTheSameAccountTenTimes (int qsize, int nthreads) throws InterruptedException {
-        MyThreadPool threadPool = new MyThreadPool(qsize,nthreads);
+    public void addToTheSameAccountTenTimes (ThreadPoolTestData testData) throws InterruptedException {
+        MyThreadPool threadPool = new MyThreadPool(testData.getQueueSize(), testData.getNoOfThreads());
         CustomBankAccount account = new CustomBankAccount();
 
         for(int taskNumber = 1 ; taskNumber <= 10; taskNumber++) {
