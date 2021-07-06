@@ -3,26 +3,30 @@ package com.myThreadPool;
 import com.myThreadPool.bankAccountApp.AddOperation;
 import com.myThreadPool.bankAccountApp.CustomBankAccount;
 import org.junit.Assert;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Listeners (TestListener.class)
 public class MyThreadPoolTests {
 
     @Test (dataProvider = "queueSize-noOfThreads", dataProviderClass = DataProviders.class)
-    public void addToTheSameAccountTenTimes (ThreadPoolTestData testData) throws InterruptedException {
+    public void addToTheSameAccountMultipleTimes (ThreadPoolTestData testData) throws InterruptedException {
         MyThreadPool threadPool = new MyThreadPool(testData.getQueueSize(), testData.getNoOfThreads());
         CustomBankAccount account = new CustomBankAccount();
+        List<AddOperation> listOfOperations = new ArrayList<>();
 
-        for(int taskNumber = 1 ; taskNumber <= 10; taskNumber++) {
+        for(int taskNumber = 1 ; taskNumber <= testData.getNoOfTasks(); taskNumber++) {
             AddOperation task = new AddOperation(account);
-            threadPool.submit(task, 10000);
+            threadPool.submit(task, testData.getDelay());
+            listOfOperations.add(task);
         }
 
-        double expectedResult = 0;
-        for (int i = 1; i <= 10; i++) {
-            expectedResult += 100;
-            expectedResult += (expectedResult * 0.01);
-        }
-        Thread.sleep(40000);
+
+        double expectedResult = BankOperationHelper.calculateExpectedBalance(listOfOperations);
+        Thread.sleep(60000);
         Assert.assertEquals("The final account balance is not correct", expectedResult, account.getBalance(), 0.00001);
     }
 

@@ -8,4 +8,6 @@ import lombok.Getter;
 public class ThreadPoolTestData {
     private final int queueSize;
     private final int noOfThreads;
+    private final int noOfTasks;
+    private final int delay;
 }
