@@ -1,8 +1,14 @@
 package com.myThreadPool;
 
+
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class MyThreadPool {
 
     private final MyQueue<RunnableDelayPairing> queue;
+    private final ThreadControlUnit threadControlUnit;
 
     /**
      * Constructor of MyThreadPool
@@ -18,14 +24,22 @@ public class MyThreadPool {
         this.queue = new MyQueue<>(queueSize);
         String threadName;
         TaskExecutor taskExecutor;
+        List<Thread> threadList = new ArrayList<>();
         for (int cnt = 1; cnt <= numberOfThreads; cnt++) {
             threadName = String.format("Thread-%d", cnt);
             taskExecutor = new TaskExecutor(queue);
             Thread thread = new Thread(taskExecutor, threadName);
-            thread.start();
+            threadList.add(thread);
         }
+        threadControlUnit = new ThreadControlUnit(threadList);
     }
 
+    public void startThreadPool() {
+        threadControlUnit.startAll();
+    }
+    public void shutdownThreadPool() {
+        threadControlUnit.shutdownWhenAllWaiting();
+    }
     /**
      * Submit method adds the Runnable with its delay to the queue using a wrapper class RunnableDelayPairing
      *

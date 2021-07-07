@@ -26,7 +26,9 @@ public class TaskExecutor implements Runnable{
                 System.out.printf("Task Finished by Thread : %s\n", name);
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            String name = Thread.currentThread().getName();
+            System.out.printf("Exiting Thread : %s\n", name);
+            //e.printStackTrace();
         }
     }
 }

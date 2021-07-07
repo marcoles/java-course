@@ -23,7 +23,7 @@ public class MyThreadPoolTests {
             expectedResult += 100;
             expectedResult += (expectedResult * 0.01);
         }
-        Thread.sleep(30000);
+        Thread.sleep(60000);
         Assert.assertEquals("The final account balance is not correct", expectedResult, account.getBalance(), 0.00001);
     }
 
