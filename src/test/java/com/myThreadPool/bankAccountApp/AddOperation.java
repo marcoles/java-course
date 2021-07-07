@@ -1,10 +1,18 @@
 package com.myThreadPool.bankAccountApp;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class AddOperation extends BankOperation {
+    protected boolean isBonusActive = true;
+    protected final double multiplier = 0.01;
 
     public AddOperation(CustomBankAccount account) {
         super(account);
     }
+
 
     /**
      * The run method has a 1 second sleep to simulate longer processing.

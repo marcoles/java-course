@@ -1,6 +1,7 @@
 package com.myThreadPool.bankAccountApp;
 
-public class AddBonusOperation extends BankOperation {
+public class AddBonusOperation extends AddOperation {
+
 
     public AddBonusOperation(CustomBankAccount account) {
         super(account);
@@ -14,7 +15,7 @@ public class AddBonusOperation extends BankOperation {
      * Returns the calculated amount
      */
     private double calculateBonusAmount(){
-        return account.getBalance() * 0.01;
+        return account.getBalance() * super.multiplier;
     }
 
     /**
