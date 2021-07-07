@@ -1,5 +1,10 @@
 package com.myThreadPool.bankAccountApp;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class AddOperation extends BankOperation {
     protected boolean isBonusActive = true;
     protected final double multiplier = 0.01;
@@ -8,23 +13,6 @@ public class AddOperation extends BankOperation {
         super(account);
     }
 
-    public void setBonusActive(boolean bonusActive) {
-        isBonusActive = bonusActive;
-    }
-
-    /**
-     * Used to check if the bonus on deposits is currently active
-     *
-     * @return
-     * Returns true if bonus is active and false if it is inactive
-     */
-    public boolean isBonusActive() {
-        return isBonusActive;
-    }
-
-    public double getMultiplier() {
-        return multiplier;
-    }
 
     /**
      * The run method has a 1 second sleep to simulate longer processing.

@@ -2,7 +2,7 @@ package com.myThreadPool;
 
 import com.myThreadPool.bankAccountApp.AddOperation;
 import com.myThreadPool.bankAccountApp.CustomBankAccount;
-import org.junit.Assert;
+import org.testng.Assert;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
@@ -27,7 +27,7 @@ public class MyThreadPoolTests {
 
         double expectedResult = BankOperationHelper.calculateExpectedBalance(listOfOperations);
         Thread.sleep(60000);
-        Assert.assertEquals("The final account balance is not correct", expectedResult, account.getBalance(), 0.00001);
+        Assert.assertEquals(expectedResult, account.getBalance(), 0.00001, "The final account balance is not correct");
     }
 
 
