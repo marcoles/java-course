@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
 
         MyThreadPool threadPool = new MyThreadPool(3,5);
-        threadPool.startThreadPool();
+        threadPool.startAll();
         CustomBankAccount account = new CustomBankAccount();
 
         for(int taskNumber = 1 ; taskNumber <= 20; taskNumber++) {
@@ -15,7 +15,7 @@ public class Main {
             threadPool.submit(task, 10000);
         }
 
-        threadPool.shutdownThreadPool();
+        threadPool.shutdownWhenAllWaiting();
         System.out.printf("Final account balance: %f\n", account.getBalance());
 
         double expectedResult = 0;

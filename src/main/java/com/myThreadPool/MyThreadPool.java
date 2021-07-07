@@ -1,14 +1,12 @@
 package com.myThreadPool;
 
-
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyThreadPool {
 
     private final MyQueue<RunnableDelayPairing> queue;
-    private final ThreadControlUnit threadControlUnit;
+    private final List<Thread> threadList = new ArrayList<>();
 
     /**
      * Constructor of MyThreadPool
@@ -24,22 +22,49 @@ public class MyThreadPool {
         this.queue = new MyQueue<>(queueSize);
         String threadName;
         TaskExecutor taskExecutor;
-        List<Thread> threadList = new ArrayList<>();
         for (int cnt = 1; cnt <= numberOfThreads; cnt++) {
             threadName = String.format("Thread-%d", cnt);
             taskExecutor = new TaskExecutor(queue);
             Thread thread = new Thread(taskExecutor, threadName);
             threadList.add(thread);
         }
-        threadControlUnit = new ThreadControlUnit(threadList);
     }
 
-    public void startThreadPool() {
-        threadControlUnit.startAll();
+    public void startAll() {
+        for (Thread thread: threadList) {
+            thread.start();
+        }
     }
-    public void shutdownThreadPool() {
-        threadControlUnit.shutdownWhenAllWaiting();
+
+    public void shutdownWhenAllWaiting() {
+        boolean shutdownFlag = false;
+        try {
+            while(!shutdownFlag) {
+                if(checkIfWaiting()) {
+                    Thread.sleep(3000); // double check
+                    if(checkIfWaiting()) {
+                        shutdownFlag = true;
+                    }
+                }
+            }
+            for (Thread thread: threadList) {
+                thread.interrupt();
+            }
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        }
     }
+
+    private boolean checkIfWaiting() {
+        boolean flag = true;
+        for (Thread thread: threadList) {
+            if(!thread.getState().toString().equals("WAITING")) {
+                flag = false;
+            }
+        }
+        return flag;
+    }
+
     /**
      * Submit method adds the Runnable with its delay to the queue using a wrapper class RunnableDelayPairing
      *

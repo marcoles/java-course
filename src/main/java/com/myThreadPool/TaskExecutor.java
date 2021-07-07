@@ -1,12 +1,11 @@
 package com.myThreadPool;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public class TaskExecutor implements Runnable{
 
     private final MyQueue<RunnableDelayPairing> queue;
-
-    public TaskExecutor(MyQueue<RunnableDelayPairing> queue) {
-        this.queue = queue;
-    }
 
     /**
      * The run methods contains a while loop which is responsible
@@ -28,7 +27,7 @@ public class TaskExecutor implements Runnable{
         } catch (InterruptedException e) {
             String name = Thread.currentThread().getName();
             System.out.printf("Exiting Thread : %s\n", name);
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 }
