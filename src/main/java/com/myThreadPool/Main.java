@@ -1,11 +1,11 @@
 package com.myThreadPool;
 
-import com.myThreadPool.bankAccountApp.AddOperation;
-import com.myThreadPool.bankAccountApp.CustomBankAccount;
+//import com.myThreadPool.bankAccountApp.AddOperation;
+//import com.myThreadPool.bankAccountApp.CustomBankAccount;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
-
+        /*
         MyThreadPool threadPool = new MyThreadPool(3,5);
         threadPool.startAll();
         CustomBankAccount account = new CustomBankAccount();
@@ -24,7 +24,7 @@ public class Main {
             expectedResult += (expectedResult * 0.01);
             System.out.println(expectedResult);
         }
-
+        */
 
     }
 }
